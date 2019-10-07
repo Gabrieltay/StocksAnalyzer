@@ -1,0 +1,23 @@
+sudo: required
+
+language: generic
+
+services:
+- docker
+
+jobs:
+  include:
+  - name: "StockAnalyzer test"
+    script:
+    - >-
+      docker run --rm -v $(pwd):$(pwd) -w $(pwd) -v /var/run/docker.sock:/var/run/docker.sock openjdk:8-jdk-alpine
+      ./gradlew :check -x :ktlint -x :detekt --no-daemon --no-parallel --quiet
+  - name: "StockAnalyzer project lint"
+    script:
+    - >-
+      docker run --rm -v $(pwd):$(pwd) -w $(pwd) openjdk:8-jdk-alpine
+      ./gradlew check :ktlint :detekt -x :check --no-daemon --no-parallel --quiet
+
+branches:
+  only:
+  - master

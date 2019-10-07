@@ -9,8 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @SpringBootTest
 class AnalyzerApplicationTests {
 
-	@Test
-	fun contextLoads() {
-	}
-
+    @Test
+    fun contextLoads() {
+    }
 }

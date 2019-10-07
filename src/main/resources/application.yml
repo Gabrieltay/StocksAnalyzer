@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  jpa:
+    show-sql: true
+    hibernate:
+      use-new-id-generator-mappings: true
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

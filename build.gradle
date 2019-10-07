@@ -1,0 +1,178 @@
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+		jcenter()
+	}
+	dependencies {
+		classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinPluginVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinPluginVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-noarg:${kotlinPluginVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("gradle.plugin.com.boxfuse.client:gradle-plugin-publishing:${flywayVersion}")
+		classpath("mysql:mysql-connector-java:8.0.16")
+	}
+}
+group = "sg.fintech.stocks"
+version = "0.0.1-SNAPSHOT"
+repositories {
+	mavenCentral()
+	maven { url "https://plugins.gradle.org/m2/" }
+	jcenter()
+}
+
+apply plugin: "kotlin"
+apply plugin: "kotlin-jpa"
+apply plugin: "kotlin-spring"
+apply plugin: "io.spring.dependency-management"
+apply plugin: "org.springframework.boot"
+apply plugin: "org.flywaydb.flyway"
+apply plugin: "idea"
+apply plugin: "jacoco"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+idea {
+	module {
+		outputDir file("$buildDir/classes/main")
+		testOutputDir file("$buildDir/classes/test")
+	}
+}
+
+compileKotlin {
+	kotlinOptions {
+		allWarningsAsErrors = true
+		freeCompilerArgs = ["-Xjsr305=strict"]
+		jvmTarget = "1.8"
+	}
+}
+compileTestKotlin {
+	kotlinOptions {
+		allWarningsAsErrors = true
+		freeCompilerArgs = ["-Xjsr305=strict"]
+		jvmTarget = "1.8"
+	}
+}
+
+configurations {
+	ktlint
+	detekt
+}
+
+dependencies {
+	// spring
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	runtimeOnly("org.springframework.boot:spring-boot-devtools")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
+
+	// kotlin
+	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+	// database
+	implementation("org.flywaydb:flyway-core")
+	runtimeOnly('mysql:mysql-connector-java')
+	testImplementation("com.h2database:h2")
+
+	// graphql
+	implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:${graphqlVersion}")
+	implementation("com.graphql-java-kickstart:graphiql-spring-boot-starter:${graphqlVersion}")
+	implementation("com.graphql-java-kickstart:graphql-java-tools:5.6.1")
+
+	// linter & code analysis
+	ktlint "com.pinterest:ktlint:${ktlintVersion}"
+	detekt "io.gitlab.arturbosch.detekt:detekt-cli:${detektVersion}"
+
+	// unit testing
+	testImplementation("io.mockk:mockk:${mockkVersion}")
+	testImplementation("org.assertj:assertj-core:${assertjVersion}")
+	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiterVersion}")
+	testImplementation("com.tngtech.archunit:archunit-junit5-api:${archUnitVersion}")
+	testImplementation("com.tngtech.archunit:archunit-junit5-engine:${archUnitVersion}")
+}
+
+flyway {
+	String databaseHost = project.findProperty("dbHost") ?: "localhost"
+	String databaseName = project.findProperty("dbName") ?: "db"
+	String databaseUsername = project.findProperty("dbUsername") ?: "user"
+	String databasePassword = project.findProperty("dbPassword") ?: "password"
+	url = "jdbc:mysql://${databaseHost}:3306/${databaseName}?user=${databaseUsername}&password=${databasePassword}"
+}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		quiet {
+			events "passed", "failed", "skipped"
+		}
+	}
+}
+
+def exclusionList = [
+]
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination file("${buildDir}/jacocoHtml")
+	}
+	afterEvaluate {
+		classDirectories = files(classDirectories.files.collect {
+			fileTree(dir: it,
+					exclude: exclusionList)
+		})
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			element = 'PACKAGE'
+			excludes = exclusionList
+
+			limit {
+				minimum = 0.0
+			}
+		}
+	}
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+jacocoTestCoverageVerification.dependsOn jacocoTestReport
+
+task ktlint(type: JavaExec, group: "verification") {
+	description = "Check Kotlin code style."
+	classpath = configurations.ktlint
+	main = "com.pinterest.ktlint.Main"
+	args "src/**/*.kt"
+}
+check.dependsOn ktlint
+
+task ktlintFormat(type: JavaExec, group: "formatting") {
+	description = "Fix Kotlin code style deviations."
+	classpath = configurations.ktlint
+	main = "com.pinterest.ktlint.Main"
+	args "-F", "src/**/*.kt"
+}
+
+task detekt(type: JavaExec, group: "verification") {
+	description = "Check Kotlin code static analysis"
+	classpath = configurations.detekt
+	main = "io.gitlab.arturbosch.detekt.cli.Main"
+	def input = "$projectDir"
+	def config = "$projectDir/detekt.yml"
+	def filters = ".*/build/.*,.*/resources/.*"
+	def params = [ '-i', input, '-c', config, '-ex', filters, '--parallel', '--fail-fast']
+	args(params)
+}
+
+check.dependsOn detekt

@@ -1,0 +1,154 @@
+autoCorrect: true
+
+test-pattern:
+  active: true
+  patterns:
+  - '.*/test/.*'
+  - '.*Test.kt'
+  - '.*Spec.kt'
+  exclude-rule-sets:
+  - 'comments'
+  exclude-rules:
+  - 'LargeClass'
+  - 'LongMethod'
+  - 'NamingRules'
+  - 'WildcardImport'
+  - 'MagicNumber'
+  - 'MaxLineLength'
+  - 'LateinitUsage'
+  - 'StringLiteralDuplication'
+  - 'SpreadOperator'
+  - 'TooManyFunctions'
+  - 'ForEachOnRange'
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+
+comments:
+  active: true
+  CommentOverPrivateFunction:
+    active: false
+  CommentOverPrivateProperty:
+    active: false
+  EndOfSentenceFormat:
+    active: false
+    endOfSentenceFormat: ([.?!][ \t\n\r\f<])|([.?!]$)
+  UndocumentedPublicClass:
+    active: false
+    searchInNestedClass: true
+    searchInInnerClass: true
+    searchInInnerObject: true
+    searchInInnerInterface: true
+  UndocumentedPublicFunction:
+    active: false
+
+complexity:
+  active: true
+  ComplexInterface:
+    active: false
+    threshold: 10
+    includeStaticDeclarations: false
+  LabeledExpression:
+    active: false
+  LongMethod:
+    active: true
+    threshold: 50
+  MethodOverloading:
+    active: false
+    threshold: 6
+  StringLiteralDuplication:
+    active: false
+    threshold: 3
+    ignoreAnnotation: true
+    excludeStringsWithLessThan5Characters: true
+    ignoreStringsRegex: '$^'
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 11
+    thresholdInObjects: 11
+    thresholdInEnums: 11
+    ignoreDeprecated: false
+    ignorePrivate: false
+
+exceptions:
+  active: true
+  InstanceOfCheckForException:
+    active: false
+  NotImplementedDeclaration:
+    active: false
+  SwallowedException:
+    active: false
+
+empty-blocks:
+  active: true
+  excludes: "**/test/**,**/*.Test.kt,**/*.Spec.kt"
+
+naming:
+  active: true
+  FunctionMaxLength:
+    active: false
+    maximumFunctionNameLength: 30
+  FunctionMinLength:
+    active: false
+    minimumFunctionNameLength: 3
+
+performance:
+  active: true
+  SpreadOperator:
+    active: false
+
+potential-bugs:
+  active: true
+  LateinitUsage:
+    active: false
+    excludeAnnotatedProperties: ''
+    ignoreOnClassesPattern: ''
+  UnsafeCallOnNullableType:
+    active: false
+  UnsafeCast:
+    active: false
+
+style:
+  active: true
+  UnderscoresInNumericLiterals:
+    active: false
+  CollapsibleIfStatements:
+    active: false
+  DataClassContainsFunctions:
+    active: false
+    conversionFunctionPrefix: 'to'
+  ExpressionBodySyntax:
+    active: false
+    includeLineWrapping: false
+  FunctionOnlyReturningConstant:
+    active: false
+    ignoreOverridableFunction: true
+    excludedFunctions: 'describeContents'
+  MandatoryBracesIfStatements:
+    active: false
+  NestedClassesVisibility:
+    active: false
+  OptionalWhenBraces:
+    active: false
+  PreferToOverPairSyntax:
+    active: false
+  ReturnCount:
+    active: true
+    max: 3
+    excludedFunctions: 'equals,compareTo'
+  ThrowsCount:
+    active: false
+  SerialVersionUIDInSerializableClass:
+    active: false
+  UnnecessaryAbstractClass:
+    active: false
+  UnnecessaryParentheses:
+    active: false
+  UnusedPrivateMember:
+    active: false
+    allowedNames: '(_|ignored|expected|serialVersionUID)'
